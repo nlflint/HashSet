@@ -63,8 +63,8 @@ impl<T> HashSet<T> where T: HashableValue {
 
         match &self.values[hash_index]{
             Some(_) => {
-                let mut old_head = mem::replace(&mut self.values[hash_index], None);
-                let mut new_head = Some
+                let old_head = mem::replace(&mut self.values[hash_index], None);
+                let new_head = Some
                 (
                     Node{
                         value: value,
@@ -121,6 +121,37 @@ impl<T> HashSet<T> where T: HashableValue {
             }
         }
     }
+
+    fn remove(self: &mut Self, value: &T) -> bool {
+        let hash_index = self.get_hash(value);
+        let detached_head = mem::replace(&mut self.values[hash_index], None);
+
+        match detached_head {
+            Some(node) => {
+                if &node.value == value {
+                    mem::replace(&mut self.values[hash_index], *node.next);
+                    return true;
+                }
+            },
+            None => {return false;}
+        }
+
+        // loop {
+        //     match maybe_node {
+        //         Some(node) => {
+        //             if &node.value == value {
+
+        //                 return true;
+        //             } else {
+        //                 maybe_node = &*node.next
+        //             }
+        //         },
+        //         None => {return false;}
+        //     }
+        // }
+
+        return false;
+    }
 }
 
 fn new_hashset<T: HashableValue>() -> HashSet::<T> {
@@ -157,7 +188,7 @@ fn does_not_contain_on_hash_collision() {
 }
 
 #[test]
-fn contains_both_when_hash_collision() {
+fn contains_both_on_hash_collision() {
     //"d" and "e" both hash to 5
     let mut hash_set = new_hashset::<String>();
     hash_set.add("f".to_string());
@@ -168,7 +199,16 @@ fn contains_both_when_hash_collision() {
     
     assert!(contains_f == true);
     assert!(contains_h == true);
+}
 
+#[test]
+fn remove() {
+    let mut hash_set = new_hashset::<String>();
+    hash_set.add("a".to_string());
+    assert!(hash_set.contains(&"a".to_string()) == true);
+        
+    hash_set.remove(&"a".to_string());
+    assert!(hash_set.contains(&"a".to_string()) == false);
 }
 
 
