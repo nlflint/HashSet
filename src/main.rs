@@ -19,6 +19,12 @@ struct HashSet<T: HashableValue>{
     values: Vec<Option<Node<T>>>
 }
 
+fn get_hash<T: HashableValue>(value: T, limit: usize) -> usize {
+    let mut hasher = DefaultHasher::new();
+    value.hash(&mut hasher);
+    let hash = hasher.finish() as usize;
+    hash % limit
+}
 
 impl<T> HashSet<T> where T: HashableValue {
     fn new() -> Self {
@@ -26,11 +32,37 @@ impl<T> HashSet<T> where T: HashableValue {
             count: 0,
             values: vec![Option::None; 16]
         }
-        
     }
     
     fn add(self: &mut Self, value: T) -> bool {
-        return false;
+        let hash_index = get_hash(&value, self.capacity());
+
+        match &self.values[hash_index]{
+            Some(x) => {return false},
+            None => {
+                self.insert(value, hash_index);
+                return true;
+            }
+        }
+    }
+
+    fn capacity(self: &mut Self) -> usize {
+        return self.values.len();
+    }
+
+    fn insert(self: &mut Self, value: T, insert_index: usize) {
+        let new_node = Node {
+            next: Option::None,
+            value: value
+        };
+
+        let new_value = Some(new_node);
+
+        self.values[insert_index] = new_value;
+    }
+
+    fn contains(self: &mut Self, value: T) -> bool {
+        true
     }
 }
 
@@ -40,15 +72,18 @@ fn new_hashset<T: HashableValue>() -> HashSet::<T> {
 
 #[test]
 fn make_hashset() {
-    let mut hash_set = new_hashset::<String>();
+    let hash_set = new_hashset::<String>();
 }
 
 #[test]
-fn fail_to_add() {
+fn add_value() {
     let mut hash_set = new_hashset::<String>();
     let result = hash_set.add("yo".to_string());
+    let contains = hash_set.contains("yo".to_string());
+    assert!(result == true);
+    assert!(contains == true);
 
-    assert!(result == false);
-    
 }
+
+
 
