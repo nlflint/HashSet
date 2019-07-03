@@ -5,14 +5,15 @@ fn main() {
     println!("Hello, world!");
 }
 
-// struct Node<T: Hash + Eq> {
-//     next: Option<Box<Node<T>>>,
-//     value: T
-// }
+#[derive(Debug, Clone)]
+struct Node<T: Hash + Eq + Clone> {
+    next: Option<Box<Node<T>>>,
+    value: T
+}
 
 struct HashSet<T: Hash + Eq + Clone>{
     count: usize,
-    values: Vec<Option<T>>
+    values: Vec<Option<Node<T>>>
 }
 
 fn new_hashset<T: Hash + Eq + Clone>() {
