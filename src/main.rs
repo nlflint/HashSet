@@ -14,13 +14,19 @@ struct Node<T: Hash + Eq + Clone> {
     value: T
 }
 
-struct NatesHashSet<T: Hash + Eq + Clone>{
+struct HashSetData<T: Hash + Eq + Clone>{
     count: usize,
     values: Vec<Option<Node<T>>>
 }
 
+trait HashSet<T: HashableValue> { 
+    
+}
+
+impl<T> HashSet<T> for HashSetData<T> where T: HashableValue {}
+
 fn new_hashset<T: Hash + Eq + Clone>() {
-    NatesHashSet::<T> {
+    HashSetData::<T> {
         count: 0,
         values: vec![Option::None; 16]
     };
