@@ -132,15 +132,18 @@ impl<T> HashSet<T> where T: HashableValue {
                     mem::replace(&mut self.values[hash_index], *node.next);
                     return true;
                 }
+                mem::replace(&mut self.values[hash_index], Some(node));
             },
             None => {return false;}
         }
 
+        // detached_head = mem::replace(&mut self.values[hash_index], None);
         // loop {
         //     match maybe_node {
         //         Some(node) => {
-        //             if &node.value == value {
-
+        //             let next_node = *node.next
+        //             if &next_node.value == value {
+        //                 node.nex
         //                 return true;
         //             } else {
         //                 maybe_node = &*node.next
@@ -189,7 +192,7 @@ fn does_not_contain_on_hash_collision() {
 
 #[test]
 fn contains_both_on_hash_collision() {
-    //"d" and "e" both hash to 5
+    //"f" and "h" both hash to 5
     let mut hash_set = new_hashset::<String>();
     hash_set.add("f".to_string());
     hash_set.add("h".to_string());
@@ -209,6 +212,30 @@ fn remove() {
         
     hash_set.remove(&"a".to_string());
     assert!(hash_set.contains(&"a".to_string()) == false);
+}
+
+#[test]
+fn remove_head_on_duplciate_hash() {
+    //"f" and "h" both hash to 5
+    let mut hash_set = new_hashset::<String>();
+    hash_set.add("f".to_string());
+    hash_set.add("h".to_string());
+    hash_set.remove(&"h".to_string());
+
+    assert!(hash_set.contains(&"h".to_string()) == false);
+    assert!(hash_set.contains(&"f".to_string()) == true);
+}
+
+#[test]
+fn remove_middle_on_duplciate_hash() {
+    //"f" and "h" both hash to 5
+    let mut hash_set = new_hashset::<String>();
+    hash_set.add("f".to_string());
+    hash_set.add("h".to_string());
+    hash_set.remove(&"f".to_string());
+
+    assert!(hash_set.contains(&"f".to_string()) == false);
+    assert!(hash_set.contains(&"h".to_string()) == true);
 }
 
 
