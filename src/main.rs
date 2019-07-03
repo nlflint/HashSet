@@ -28,16 +28,27 @@ impl<T> HashSet<T> where T: HashableValue {
         }
         
     }
+    
+    fn add(self: &mut Self, value: T) -> bool {
+        return false;
+    }
 }
 
-fn new_hashset<T: HashableValue>() {
-    HashSet::<T>::new();
+fn new_hashset<T: HashableValue>() -> HashSet::<T> {
+    return HashSet::<T>::new();
 }
 
 #[test]
 fn make_hashset() {
-    let hash_set = new_hashset::<String>();
-    //hash_set.add("yo".to_string())
+    let mut hash_set = new_hashset::<String>();
+}
+
+#[test]
+fn fail_to_add() {
+    let mut hash_set = new_hashset::<String>();
+    let result = hash_set.add("yo".to_string());
+
+    assert!(result == false);
     
 }
 
