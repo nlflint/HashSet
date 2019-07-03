@@ -5,25 +5,26 @@ fn main() {
     println!("Hello, world!");
 }
 
+trait HashableValue: Hash + Eq + Clone {}
+impl<T> HashableValue for T where T: Hash + Eq + Clone {}
+
 #[derive(Debug, Clone)]
 struct Node<T: Hash + Eq + Clone> {
     next: Option<Box<Node<T>>>,
     value: T
 }
 
-struct HashSet<T: Hash + Eq + Clone>{
+struct NatesHashSet<T: Hash + Eq + Clone>{
     count: usize,
     values: Vec<Option<Node<T>>>
 }
 
 fn new_hashset<T: Hash + Eq + Clone>() {
-    HashSet::<T> {
+    NatesHashSet::<T> {
         count: 0,
         values: vec![Option::None; 16]
     };
 }
-
-
 
 #[test]
 fn make_hashset() {
