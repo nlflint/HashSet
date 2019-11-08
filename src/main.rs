@@ -2,6 +2,7 @@ use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::mem;
 
+
 fn main() {
     let mut hash_set = new_hashset::<String>();
     
@@ -33,15 +34,8 @@ fn main() {
 trait HashableValue: Hash + Eq + Clone {}
 impl<T> HashableValue for T where T: Hash + Eq + Clone {}
 
-#[derive(Debug, Clone)]
-struct Node<T: HashableValue> {
-    next: Box<Option<Node<T>>>,
-    value: T
-}
-
 struct HashSet<T: HashableValue>{
-    //count: usize,
-    values: Vec<Option<Node<T>>>
+    values: Vec<Option<Vec<T>>>
 }
 
 
@@ -49,11 +43,10 @@ struct HashSet<T: HashableValue>{
 impl<T> HashSet<T> where T: HashableValue {
     fn new() -> Self {
         HashSet::<T> {
-            //count: 0,
             values: vec![Option::None; 16]
         }
     }
-    
+
     fn add(self: &mut Self, value: T) -> bool {
         let hash_index = self.get_hash(&value);
 
@@ -61,25 +54,16 @@ impl<T> HashSet<T> where T: HashableValue {
             return false;
         }
 
-        match &self.values[hash_index]{
-            Some(_) => {
-                let old_head = mem::replace(&mut self.values[hash_index], None);
-                let new_head = Some
-                (
-                    Node{
-                        value: value,
-                        next: Box::new(old_head)
-                    }
-                    
-                );
-                mem::replace(&mut self.values[hash_index], new_head);
-                return true;
-            },
+        match &mut self.values[hash_index] {
+            Some(ref mut set) => {
+                set.push(value);
+            }
             None => {
-                self.insert(value, hash_index);
-                return true;
+                self.values[hash_index] = Option::Some(vec![value]);
             }
         }
+
+        true
     }
 
     fn get_hash(self: &mut Self, value: &T) -> usize {
@@ -93,67 +77,32 @@ impl<T> HashSet<T> where T: HashableValue {
         return self.values.len();
     }
 
-    fn insert(self: &mut Self, value: T, insert_index: usize) {
-        let new_node = Node {
-            next: Box::new(Option::None),
-            value: value
-        };
-
-        let new_value = Some(new_node);
-
-        self.values[insert_index] = new_value;
-    }
-
     fn contains(self: &mut Self, value: &T) -> bool {
         let hash_index = self.get_hash(value);
-        
-        let mut maybe_node = &self.values[hash_index];
-        loop {
-            match maybe_node {
-                Some(node) => {
-                    if &node.value == value {
-                        return true;
-                    } else {
-                        maybe_node = &*node.next
-                    }
-                },
-                None => {return false;}
-            }
+
+        match &self.values[hash_index] {
+            Some(set) => {
+                set.iter().any(|x| x == value)
+            },
+            None => false
         }
     }
 
     fn remove(self: &mut Self, value: &T) -> bool {
         let hash_index = self.get_hash(value);
-        let detached_head = mem::replace(&mut self.values[hash_index], None);
 
-        match detached_head {
-            Some(node) => {
-                if &node.value == value {
-                    mem::replace(&mut self.values[hash_index], *node.next);
-                    return true;
+        match &mut self.values[hash_index] {
+            Some(ref mut set) => {
+                for i in 0..set.len() {
+                    if set[i] == *value {
+                        set.remove(i);
+                        return true;
+                    }
                 }
-                mem::replace(&mut self.values[hash_index], Some(node));
+                false
             },
-            None => {return false;}
+            None => false
         }
-
-        // detached_head = mem::replace(&mut self.values[hash_index], None);
-        // loop {
-        //     match maybe_node {
-        //         Some(node) => {
-        //             let next_node = *node.next
-        //             if &next_node.value == value {
-        //                 node.nex
-        //                 return true;
-        //             } else {
-        //                 maybe_node = &*node.next
-        //             }
-        //         },
-        //         None => {return false;}
-        //     }
-        // }
-
-        return false;
     }
 }
 
@@ -238,4 +187,12 @@ fn remove_middle_on_duplciate_hash() {
     assert!(hash_set.contains(&"h".to_string()) == true);
 }
 
+#[test]
+fn remove_where_not_exists() {
+    //"f" and "h" both hash to 5
+    let mut hash_set = new_hashset::<String>();
+    let result = hash_set.remove(&"f".to_string());
+
+    assert!(result == false);
+}
 
